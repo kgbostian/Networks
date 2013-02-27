@@ -25,7 +25,7 @@ void startServer(int port);
 void handleConnection(int clisock);
 void enterClientMode(char message[1024], int sockfd, int msgSize, char output[1024]);
 void enterClientModeFromServer(int clisock, bool first = true);
-void playerMakeMove(int clisock, TicTacToe ttt);
+void playerMakeMove(int clisock, TicTacToe* ttt);
  
 int main(int argc, char* argv[]) 
 {
@@ -142,7 +142,7 @@ void enterClientModeFromServer(int clisock, bool first)
       index = 0;
 	}
 	TicTacToe ttt(piece);
-	printf("%c\n", ttt.playerPiece);
+	//printf("%c\n", ttt.playerPiece);
    ttt.initBoard();
    ttt.showBoard();
    while(play)
@@ -165,7 +165,7 @@ void enterClientModeFromServer(int clisock, bool first)
                printf("Move: %c, %c.\n", buffer[1], buffer[2]);
                ttt.placeMove((int)buffer[1] - 48, (int)buffer[2] - 48, pieces[index]);
                ttt.showBoard();
-					playerMakeMove(clisock, ttt);
+					playerMakeMove(clisock, &ttt);
             }
 				else if(buffer[0] == 'q')
 				{
@@ -179,16 +179,11 @@ void enterClientModeFromServer(int clisock, bool first)
             }
             
          }
-         //exit(1);
       }
       else
       {
          first = false;
-         playerMakeMove(clisock, ttt);
-         //buffer[0] = 'm';
-         //printf("Enter your first row move X: ");
-         //cin.getline(buffer, 4);
-         //sendMessage(buffer, clisock);
+         playerMakeMove(clisock, &ttt);
       }
    }
    printf("Exiting Client Mode");
@@ -244,11 +239,11 @@ void startServer(int port)
    }
 }
 
-void playerMakeMove(int clisock, TicTacToe ttt)
+void playerMakeMove(int clisock, TicTacToe* ttt)
 {
    char buffer[4];
    
-   ttt.makeMove(buffer);
+   ttt->makeMove(buffer);
    //Allows for safe disconnect.
 	if(buffer[0] == 'q')
 	{
