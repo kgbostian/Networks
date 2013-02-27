@@ -2,8 +2,9 @@
 *TODO:                                                                                    *
 *Needed Protocol Strings:                                                                 *
 *pa-  to play again                                                                       *
-*TicTacToe is in. Now to make the moves on the board and display the board.					*
-*Implement TicTacToe                                                                      *
+*Need to get the play again working.                                                      *
+*Test for ties.                                                                           *
+*Messing up somewhere after the win.                                                      *
 *Optional:                                                                                *
 *MSG-to send a string (chat)                                                              *
 ******************************************************************************************/
@@ -83,6 +84,7 @@ int main(int argc, char* argv[])
                 enterClientModeFromServer(sockfd);
         }
         close(sockfd);
+        exit(1);
 }
 
 
@@ -135,6 +137,7 @@ void enterClientModeFromServer(int clisock, bool first)
    memset(buffer, '\0', 3);
    bool play = true;
   	char piece = 'X';
+   char resp[2];
    int index = 1;
 	if(first == false)
 	{
@@ -147,6 +150,7 @@ void enterClientModeFromServer(int clisock, bool first)
    ttt.showBoard();
    while(play)
    {
+      printf("Inside While Statement.");
       if(first == false)
       {
          if((msgSize = recv(clisock, buffer, 3, 0)) < 0)
@@ -167,6 +171,26 @@ void enterClientModeFromServer(int clisock, bool first)
                ttt.showBoard();
 					playerMakeMove(clisock, &ttt);
             }
+            else if(buffer[0] == 'w')
+            {
+               ttt.placeMove((int)buffer[1] - 48, (int)buffer[2] - 48, pieces[index]);
+               ttt.showBoard();
+               printf("%c has won. Would you like to play again? ", pieces[index]);
+               scanf("%s", resp);
+               if(resp[0] == 'y')
+               {
+                  printf("resp = y");
+                  play = true;
+               }
+               else
+               {
+                  play = false;
+               }
+               //Getting here.
+               printf("play = %s.\n", (play ? "True" : "False"));
+               //Not getting here
+               printf("test");
+            }
 				else if(buffer[0] == 'q')
 				{
 					printf("Quit Command Received. Exiting.");
@@ -185,7 +209,10 @@ void enterClientModeFromServer(int clisock, bool first)
          first = false;
          playerMakeMove(clisock, &ttt);
       }
+      printf("Not sure where this is.");
    }
+   printf("Outside while statment.");
+   closeSocket(clisock);
    printf("Exiting Client Mode");
 }
 
