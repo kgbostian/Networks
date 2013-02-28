@@ -4,6 +4,7 @@
 *pa-  to play again                                                                       *
 *Need to get the play again working.                                                      *
 *Test for ties.                                                                           *
+*Cross tests do not work. Vertical might not.                                             *
 *Messing up somewhere after the win.                                                      *
 *Optional:                                                                                *
 *MSG-to send a string (chat)                                                              *
@@ -27,6 +28,7 @@ void handleConnection(int clisock);
 void enterClientMode(char message[1024], int sockfd, int msgSize, char output[1024]);
 void enterClientModeFromServer(int clisock, bool first = true);
 void playerMakeMove(int clisock, TicTacToe* ttt);
+bool initGame(int clisock);
  
 int main(int argc, char* argv[]) 
 {
@@ -93,23 +95,8 @@ void handleConnection(int clisock)
         char buffer[1016]; // 
         memset(buffer, '\0', 1016); // Clear the buffer.
         
-        /*if((msgSize = recv(clisock, buffer, 1015, 0)) < 0) 
-        {
-                cerr << "Receive error." << endl;
-        }
-        
-        cout << "Message received from client: " << buffer<<endl;
-        char response[1024];
-        sprintf(response, "Server: I received the following message:  %s", buffer);
-        
-        if((msgSize = send(clisock, response, strlen(response), 0)) < 0) 
-        {
-                cerr << "Send error." << endl;
-        }
-        */
         printf("Connection Created: Entering Client Mode.\n");
         enterClientModeFromServer(clisock, false);
-        //close(clisock);
 }
 
 void closeSocket(int clisock)
@@ -130,11 +117,12 @@ bool sendMessage(char resp[4], int clisock)
 
 void enterClientModeFromServer(int clisock, bool first)
 {
-   printf("Inside Client mode from server.\n");
+   //printf("Inside Client mode from server.\n");
    int msgSize;
+   int count = 0;
    char buffer[4];
    char pieces[2] = {'X', 'O'};
-   memset(buffer, '\0', 3);
+   memset(buffer, '\0', 4);
    bool play = true;
   	char piece = 'X';
    char resp[2];
@@ -148,9 +136,11 @@ void enterClientModeFromServer(int clisock, bool first)
 	//printf("%c\n", ttt.playerPiece);
    ttt.initBoard();
    ttt.showBoard();
+
+   if(initGame(clisock))
    while(play)
    {
-      printf("Inside While Statement.");
+      //printf("Inside While Statement.");
       if(first == false)
       {
          if((msgSize = recv(clisock, buffer, 3, 0)) < 0)
@@ -160,36 +150,79 @@ void enterClientModeFromServer(int clisock, bool first)
          else
          {
             printf("Receiving response.\n");
-            if((buffer[0] == 'w') && (buffer[1] == 'p'))
+            printf("Buffer: %s", buffer);
+            cout << endl;
+            if((buffer[0] == 'n') && (buffer[1] == 'g'))
             {
-               printf("I want to play.");
+               //printf("New Game found.\n");
+               ttt.initBoard();
+               ttt.showBoard();
+               if(piece == 'X')
+                  playerMakeMove(clisock, &ttt);
+               else
+               {
+                  memset(buffer, '\0', 4);
+                  buffer[0] = 'y';
+                  buffer[1] = 'm';
+                  sendMessage(buffer, clisock);
+               }
             }
-            else if(buffer[0] == 'm')
+            else if((buffer[0] == 'm') && (buffer[1]-'0' >= 0 && (int)buffer[1]-48 < 3) && ((int)buffer[2]-48 >= 0 && (int)buffer[2]-48 < 3))
             {
-               printf("Move: %c, %c.\n", buffer[1], buffer[2]);
+               //printf("Move: %c, %c.\n", buffer[1], buffer[2]);
                ttt.placeMove((int)buffer[1] - 48, (int)buffer[2] - 48, pieces[index]);
                ttt.showBoard();
 					playerMakeMove(clisock, &ttt);
             }
-            else if(buffer[0] == 'w')
+            else if(buffer[0] == 'y' && buffer[1] == 'm')
+            {
+               ttt.showBoard();
+               playerMakeMove(clisock, &ttt);
+            }
+            else if((buffer[0] == 'w') && (buffer[1]-'0' >= 0 && buffer[1]-'0' < 3) && (buffer[2]-'0' >= 0 && buffer[2]-'0' < 3))
             {
                ttt.placeMove((int)buffer[1] - 48, (int)buffer[2] - 48, pieces[index]);
                ttt.showBoard();
+               memset(buffer, '\0', 4);
                printf("%c has won. Would you like to play again? ", pieces[index]);
+               memset(resp, '\0', 2);
                scanf("%s", resp);
                if(resp[0] == 'y')
                {
-                  printf("resp = y");
-                  play = true;
+                  ttt.initBoard();
+                  buffer[0] = 'p';
+                  buffer[1] = 'a';
+                  sendMessage(buffer, clisock);
                }
                else
                {
+                  memset(buffer, '\0', 4);
+                  buffer[0] = 'q';
+                  sendMessage(buffer, clisock);
                   play = false;
+                  closeSocket(clisock);
+                  exit(1);
                }
-               //Getting here.
-               printf("play = %s.\n", (play ? "True" : "False"));
-               //Not getting here
-               printf("test");
+            }
+            else if((buffer[0] = 'p') && (buffer[1] == 'a'))
+            {
+               printf("Opponent wants to play again. Do you?");
+               scanf("%s", resp);
+               memset(buffer, '\0', 4);
+               if(resp[0] == 'y')
+               {
+                  ttt.initBoard();
+                  buffer[0] = 'n';
+                  buffer[1] = 'g';
+                  sendMessage(buffer, clisock);
+               }
+               else
+               {
+                  buffer[0] = 'q';
+                  sendMessage(buffer, clisock);
+                  closeSocket(clisock);
+                  exit(1);
+               }
             }
 				else if(buffer[0] == 'q')
 				{
@@ -200,6 +233,9 @@ void enterClientModeFromServer(int clisock, bool first)
             else
             {
                printf("Invalid command received.\n");
+               count++;
+               if(count == 10)
+                  exit(1);
             }
             
          }
@@ -269,7 +305,7 @@ void startServer(int port)
 void playerMakeMove(int clisock, TicTacToe* ttt)
 {
    char buffer[4];
-   
+   memset(buffer, '\0', 4);
    ttt->makeMove(buffer);
    //Allows for safe disconnect.
 	if(buffer[0] == 'q')
@@ -284,6 +320,38 @@ void playerMakeMove(int clisock, TicTacToe* ttt)
 	
 	
 }
+
+//Inital Game Command Prompt.
+bool initGame(int sockfd)
+{
+   char command[4];
+   char result[4];
+   int msgSize;
+ 
+   printf("Command: ");
+   scanf("%s", command);
+
+   //Want to play? command.
+   if(command[0] == 'w' && command[1] == 'p')
+   {
+      sendMessage(command, sockfd);
+
+      if((msgSize = recv(sockfd, result, 3, 0)) < 0)
+         cerr << "Receive Command Error.";
+      if(strcmp(result, "wp") == 0)
+      {
+         //printf("Beginning Game.");
+         return true;
+      }
+   }
+   if(command[0] == 'q')
+   {
+      closeSocket(sockfd);
+      exit(1);
+   }
+   return false;
+}
+
 
 void enterClientMode(char message[1024], int sockfd, int msgSize, char output[1024])
 {

@@ -38,7 +38,6 @@ public:
    void placeMove(int row, int col, char piece)
    {
       printf("Placing Move: %d, %d.\n", row, col);
-      //if(validMove(row,col))
       board[row][col] = piece;
       return;
    }
@@ -49,6 +48,8 @@ public:
       int col;
       char rs[2];
       char cs[2];
+
+      memset(move, '\0', 3);
 
       printf("Your turn %c!\n", playerPiece);
       while(true)
@@ -110,14 +111,23 @@ public:
 
       printf("Checking left Cross.");
       //Cross Top->Bottom
-      if(board[0][0] == playerPiece && board[1][1] == playerPiece && board[1][2] == playerPiece)
+      if(board[0][0] == playerPiece && board[1][1] == playerPiece && board[2][2] == playerPiece)
          return true;
       
       printf("Checking right Cross.");
       if(board[2][0] == playerPiece && board[1][1] == playerPiece && board[0][2] == playerPiece)
          return true;
 
-      return false;
+      for(int i = 0; i < 3; i++)
+      {
+         for(int j = 0; j < 3; j++)
+         {
+            if(board[i][j] == ' ')
+               return false;
+         }
+      }
+
+      return true;
    }
 
    bool validMove(int row, int col)
