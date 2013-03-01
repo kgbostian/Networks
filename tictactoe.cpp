@@ -71,7 +71,7 @@ public:
 
          row = (int)rs[0] - 48;
          col = (int)cs[0] - 48;
-         printf("row: %d, col = %d\n", row, col);
+         //printf("row: %d, col = %d\n", row, col);
          if(validMove(row, col))
          {
             placeMove(row, col, playerPiece);
@@ -94,27 +94,27 @@ public:
 
    bool checkGameOver()
    {
-      printf("Checking for game over.");
+      //printf("Checking for game over.");
       //Check Horizontal and Vertical.
       for(int i = 0; i < 3; i++)
       {
-         printf("Checking Horizontal.");
+         //printf("Checking Horizontal.");
          //Horizontal
          if(board[i][0] == playerPiece && board[i][1] == playerPiece && board[i][2] == playerPiece)
             return true;
 
-         printf("Checking Vertical.");
+         //printf("Checking Vertical.");
          //Vertical
          if(board[0][i] == playerPiece && board[0][i] == playerPiece && board[2][i] == playerPiece)
             return true;
       }
 
-      printf("Checking left Cross.");
+      //printf("Checking left Cross.");
       //Cross Top->Bottom
       if(board[0][0] == playerPiece && board[1][1] == playerPiece && board[2][2] == playerPiece)
          return true;
       
-      printf("Checking right Cross.");
+      //printf("Checking right Cross.");
       if(board[2][0] == playerPiece && board[1][1] == playerPiece && board[0][2] == playerPiece)
          return true;
 
@@ -135,10 +135,10 @@ public:
       //printf("row = %d, col = %d\n", row, col);
       if(board[row][col] == ' ')
       {
-         printf("Valid Move.");
+         printf("Valid Move.\n");
          return true;
       }
-      printf("Invalid Move.");
+      printf("Invalid Move.\n");
       return false;
    }
 

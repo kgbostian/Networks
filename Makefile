@@ -19,7 +19,7 @@ link:
 	g++ -o a networktictactoe.o tictactoe.o -Wall
 
 run:
-	./a 127.0.0.1 10000
+	./a 127.0.0.1 20000
 
 commit:
 	git commit -m

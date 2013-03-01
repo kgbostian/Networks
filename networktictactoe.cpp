@@ -1,14 +1,3 @@
-/******************************************************************************************
-*TODO:                                                                                    *
-*Needed Protocol Strings:                                                                 *
-*pa-  to play again                                                                       *
-*Need to get the play again working.                                                      *
-*Test for ties.                                                                           *
-*Cross tests do not work. Vertical might not.                                             *
-*Messing up somewhere after the win.                                                      *
-*Optional:                                                                                *
-*MSG-to send a string (chat)                                                              *
-******************************************************************************************/
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>
@@ -143,6 +132,7 @@ void enterClientModeFromServer(int clisock, bool first)
       //printf("Inside While Statement.");
       if(first == false)
       {
+         memset(buffer, '\0', 4);
          if((msgSize = recv(clisock, buffer, 3, 0)) < 0)
          {
             cerr <<"Receive error." << endl;
@@ -150,7 +140,7 @@ void enterClientModeFromServer(int clisock, bool first)
          else
          {
             printf("Receiving response.\n");
-            printf("Buffer: %s", buffer);
+            //printf("Buffer: %s", buffer);
             cout << endl;
             if((buffer[0] == 'n') && (buffer[1] == 'g'))
             {
@@ -189,7 +179,6 @@ void enterClientModeFromServer(int clisock, bool first)
                scanf("%s", resp);
                if(resp[0] == 'y')
                {
-                  ttt.initBoard();
                   buffer[0] = 'p';
                   buffer[1] = 'a';
                   sendMessage(buffer, clisock);
@@ -245,17 +234,15 @@ void enterClientModeFromServer(int clisock, bool first)
          first = false;
          playerMakeMove(clisock, &ttt);
       }
-      printf("Not sure where this is.");
    }
-   printf("Outside while statment.");
    closeSocket(clisock);
-   printf("Exiting Client Mode");
+   //printf("Exiting Client Mode");
 }
 
 void startServer(int port)
 {
    // Set up the socket.
-   printf("Inside server.\n");
+   //printf("Inside server.\n");
 
 
    int sockfd, newsockfd;
@@ -352,21 +339,3 @@ bool initGame(int sockfd)
    return false;
 }
 
-
-void enterClientMode(char message[1024], int sockfd, int msgSize, char output[1024])
-{
-   cout <<"What message to send: ";
-   cin.getline(message,1024);
-   if((msgSize = send(sockfd, message, strlen(message), 0)) < 0) 
-   {
-      cerr << "Send error." << endl;
-   }
-  
-   // Wait to receive response.
-   if((msgSize = recv(sockfd, output, 1023, 0)) < 0) 
-   {
-      cerr << "Receive error." << endl;
-   }
-
-   cout << output << endl;
-}
