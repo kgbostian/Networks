@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
         // Check for correct commandline input.
         if(argc < 3) 
         {
-                cerr << "Usage: ./tictactoe [server name] [port]" << endl;
+                cerr << "Usage: ./a [server name] [port]" << endl;
                 exit(1);
         }
         
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
         if(connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) 
         {
-                cerr << "Connect error." << endl;
+                cerr << "Connect error. Starting Server" << endl;
                 startServer(port);
         }
         else
@@ -140,7 +140,8 @@ void enterClientModeFromServer(int clisock, bool first)
          else
          {
             printf("Receiving response.\n");
-            //printf("Buffer: %s", buffer);
+            //printf("Buffer: %s\n", buffer);
+            buffer[3] = '\0';
             cout << endl;
             if((buffer[0] == 'n') && (buffer[1] == 'g'))
             {
@@ -193,7 +194,7 @@ void enterClientModeFromServer(int clisock, bool first)
                   exit(1);
                }
             }
-            else if((buffer[0] = 'p') && (buffer[1] == 'a'))
+            else if((buffer[0] == 'p') && (buffer[1] == 'a'))
             {
                printf("Opponent wants to play again. Do you?");
                scanf("%s", resp);
@@ -223,7 +224,7 @@ void enterClientModeFromServer(int clisock, bool first)
             {
                printf("Invalid command received.\n");
                count++;
-               if(count == 10)
+               if(count == 3)
                   exit(1);
             }
             
@@ -242,7 +243,7 @@ void enterClientModeFromServer(int clisock, bool first)
 void startServer(int port)
 {
    // Set up the socket.
-   //printf("Inside server.\n");
+   printf("Server waiting for connection.\n");
 
 
    int sockfd, newsockfd;

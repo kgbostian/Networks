@@ -49,7 +49,7 @@ public:
       char rs[2];
       char cs[2];
 
-      memset(move, '\0', 3);
+      memset(move, '\0', 4);
 
       printf("Your turn %c!\n", playerPiece);
       while(true)
@@ -88,7 +88,7 @@ public:
             return;
          }
          else 
-            printf("Invalid piece placement. Please enter a valid move.");
+            printf("Invalid piece placement. Please enter a valid move.\n");
       }
    }
 
